@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: booking-service
+          uri: lb://booking-service
+          predicates:
+            - Path=/api/bookings/**, /booking/**, /bookings, /user/**
+          filters:
+            - AddRequestHeader=X-Gateway-Request, Gateway-Request
+        - id: hotel-service
+          uri: lb://hotel-service
+          predicates:
+            - Path=/api/hotels/**, /api/rooms/**
+          filters:
+            - AddRequestHeader=X-Gateway-Request, Gateway-Request
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  secret: 5Jf8Ks9Dm3Pq7Rt2Wv6Yb1Zn4Hg0Lx8Cj5Va9Qe3Ui7Po1Mk4Nf6Tb2Sg8Rh0Wd3
+
+logging:
+  level:
+    com.n1str: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+

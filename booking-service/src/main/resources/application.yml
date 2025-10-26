@@ -1,0 +1,98 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: booking-service
+  datasource:
+    url: jdbc:h2:mem:bookingdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        format_sql: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      adjust-dates-to-context-timezone: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+    registry-fetch-interval-seconds: 10
+    heartbeat-executor-thread-pool-size: 2
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    prefer-ip-address: false
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 10000
+        read-timeout: 10000
+        loggerLevel: FULL
+      hotel-service:
+        connect-timeout: 10000
+        read-timeout: 10000
+        loggerLevel: FULL
+  hystrix:
+    enabled: true
+  circuitbreaker:
+    enabled: true
+
+jwt:
+  secret: "my-secret-key-for-jwt-token-generation-at-least-256-bits-long-for-HS256-algorithm"
+  expiration: 3600000
+
+logging:
+  level:
+    com.n1str: DEBUG
+    org.springframework.security: DEBUG
+    feign: DEBUG
+    com.n1str.booking.client.HotelServiceClient: DEBUG
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        slowCallRateThreshold: 100
+        slowCallDurationThreshold: 5000ms
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10000ms
+        recordExceptions:
+          - feign.FeignException
+          - java.io.IOException
+          - java.net.ConnectException
+          - java.util.concurrent.TimeoutException
+    instances:
+      hotelService:
+        baseConfig: default
+        slidingWindowSize: 20
+        failureRateThreshold: 60
+
