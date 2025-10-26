@@ -254,7 +254,6 @@ Booking Service:
 
 - Booking Service UI: http://localhost:8082/swagger-ui.html
 - Hotel Service UI: http://localhost:8081/swagger-ui.html
-- Через Gateway: http://localhost:8080/swagger-ui.html
 
 Все эндпойнты документированы с примерами и указанием ролей.
 
